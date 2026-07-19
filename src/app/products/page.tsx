@@ -1,32 +1,65 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import { CATEGORIES, Product } from '@/lib/products';
 
 const PRODUCTS_PER_PAGE = 8;
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'rating'>('default');
-  const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
+  // Read state from URL search params
+  const search = searchParams.get('search') || '';
+  const selectedCategory = searchParams.get('category') || 'All';
+  const sortBy = searchParams.get('sort') || 'default';
+  const currentPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  // Helper: update URL search params
+  const updateParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === null || value === '' || value === 'All' || value === 'default' || (key === 'page' && value === '1')) {
+          params.delete(key);
+        } else {
+          params.set(key, value);
+        }
+      });
+
+      const qs = params.toString();
+      router.push(`/products${qs ? `?${qs}` : ''}`, { scroll: false });
+    },
+    [router, searchParams]
+  );
+
+  // Fetch products when search params change
   useEffect(() => {
-    async function getProducts() {
+    async function fetchProducts() {
       try {
         setLoading(true);
         const queryParams = new URLSearchParams();
-        if (search.trim()) queryParams.set("search", search);
-        if (selectedCategory !== "All") queryParams.set("category", selectedCategory);
-        if (sortBy !== "default") queryParams.set("sort", sortBy);
+        if (search) queryParams.set('search', search);
+        if (selectedCategory !== 'All') queryParams.set('category', selectedCategory);
+        if (sortBy !== 'default') queryParams.set('sort', sortBy);
+        queryParams.set('page', String(currentPage));
+        queryParams.set('limit', String(PRODUCTS_PER_PAGE));
 
         const res = await fetch(`/api/products?${queryParams.toString()}`);
         const data = await res.json();
-        if (Array.isArray(data)) {
-          setProducts(data);
+
+        if (data.products && Array.isArray(data.products)) {
+          setProducts(data.products);
+          setTotal(data.total || 0);
+          setTotalPages(data.totalPages || 1);
         }
       } catch (err) {
         console.error('Error fetching products:', err);
@@ -34,29 +67,44 @@ export default function ProductsPage() {
         setLoading(false);
       }
     }
-    getProducts();
-  }, [search, selectedCategory, sortBy]);
+    fetchProducts();
+  }, [search, selectedCategory, sortBy, currentPage]);
 
-  const filtered = products;
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PRODUCTS_PER_PAGE));
-  const safePage = Math.min(currentPage, totalPages);
-  const paginated = filtered.slice((safePage - 1) * PRODUCTS_PER_PAGE, safePage * PRODUCTS_PER_PAGE);
-
+  // Handlers that update URL params
   const handleSearch = (val: string) => {
-    setSearch(val);
-    setCurrentPage(1);
+    updateParams({ search: val || null, page: '1' });
   };
 
   const handleCategory = (cat: string) => {
-    setSelectedCategory(cat);
-    setCurrentPage(1);
+    updateParams({ category: cat === 'All' ? null : cat, page: '1' });
   };
 
-  const handleSort = (val: typeof sortBy) => {
-    setSortBy(val);
-    setCurrentPage(1);
+  const handleSort = (val: string) => {
+    updateParams({ sort: val === 'default' ? null : val, page: '1' });
   };
+
+  const handlePage = (page: number) => {
+    updateParams({ page: page === 1 ? null : String(page) });
+  };
+
+  // Debounced search input
+  const [searchInput, setSearchInput] = useState(search);
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput !== search) {
+        handleSearch(searchInput);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  const startItem = total === 0 ? 0 : (currentPage - 1) * PRODUCTS_PER_PAGE + 1;
+  const endItem = Math.min(currentPage * PRODUCTS_PER_PAGE, total);
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans">
@@ -83,14 +131,14 @@ export default function ProductsPage() {
             <input
               id="product-search"
               type="text"
-              value={search}
-              onChange={(e) => handleSearch(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search products..."
               className="block w-full rounded-xl border border-zinc-200 bg-white py-2.5 pl-10 pr-4 text-sm text-zinc-900 placeholder-zinc-400 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
             />
-            {search && (
+            {searchInput && (
               <button
-                onClick={() => handleSearch('')}
+                onClick={() => { setSearchInput(''); handleSearch(''); }}
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 hover:text-zinc-700"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -106,7 +154,7 @@ export default function ProductsPage() {
             <select
               id="sort-select"
               value={sortBy}
-              onChange={(e) => handleSort(e.target.value as typeof sortBy)}
+              onChange={(e) => handleSort(e.target.value)}
               className="rounded-xl border border-zinc-200 bg-white py-2.5 pl-3 pr-8 text-sm text-zinc-700 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer"
             >
               <option value="default">Featured</option>
@@ -138,9 +186,9 @@ export default function ProductsPage() {
         {/* Results Summary */}
         <div className="mb-5 flex items-center justify-between">
           <p className="text-sm text-zinc-500">
-            {filtered.length === 0
+            {total === 0
               ? 'No products found'
-              : `Showing ${(safePage - 1) * PRODUCTS_PER_PAGE + 1}–${Math.min(safePage * PRODUCTS_PER_PAGE, filtered.length)} of ${filtered.length} product${filtered.length === 1 ? '' : 's'}`}
+              : `Showing ${startItem}–${endItem} of ${total} product${total === 1 ? '' : 's'}`}
           </p>
         </div>
 
@@ -162,9 +210,9 @@ export default function ProductsPage() {
               </div>
             ))}
           </div>
-        ) : paginated.length > 0 ? (
+        ) : products.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {paginated.map((product) => (
+            {products.map((product) => (
               <ProductCard
                 key={product.id}
                 id={product.id}
@@ -189,7 +237,7 @@ export default function ProductsPage() {
             <h3 className="text-lg font-semibold text-zinc-700">No products found</h3>
             <p className="mt-1 text-sm text-zinc-400">Try adjusting your search or category filter.</p>
             <button
-              onClick={() => { handleSearch(''); handleCategory('All'); }}
+              onClick={() => { setSearchInput(''); updateParams({ search: null, category: null, sort: null, page: null }); }}
               className="mt-6 rounded-full bg-zinc-950 px-5 py-2 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors"
             >
               Clear Filters
@@ -202,8 +250,8 @@ export default function ProductsPage() {
           <div className="mt-12 flex items-center justify-center gap-1.5">
             <button
               id="pagination-prev"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={safePage === 1}
+              onClick={() => handlePage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
               className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 transition-colors hover:border-zinc-300 hover:text-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="Previous page"
             >
@@ -213,8 +261,8 @@ export default function ProductsPage() {
             </button>
 
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-              const isNear = Math.abs(page - safePage) <= 1 || page === 1 || page === totalPages;
-              const isDot = !isNear && (page === safePage - 2 || page === safePage + 2);
+              const isNear = Math.abs(page - currentPage) <= 1 || page === 1 || page === totalPages;
+              const isDot = !isNear && (page === currentPage - 2 || page === currentPage + 2);
               if (!isNear && !isDot) return null;
               if (isDot) {
                 return <span key={page} className="text-zinc-300 text-sm px-1">…</span>;
@@ -223,9 +271,9 @@ export default function ProductsPage() {
                 <button
                   key={page}
                   id={`pagination-page-${page}`}
-                  onClick={() => setCurrentPage(page)}
+                  onClick={() => handlePage(page)}
                   className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-semibold transition-colors ${
-                    page === safePage
+                    page === currentPage
                       ? 'bg-zinc-950 text-white'
                       : 'border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-900'
                   }`}
@@ -237,8 +285,8 @@ export default function ProductsPage() {
 
             <button
               id="pagination-next"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={safePage === totalPages}
+              onClick={() => handlePage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
               className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 transition-colors hover:border-zinc-300 hover:text-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="Next page"
             >

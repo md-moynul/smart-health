@@ -101,22 +101,41 @@ export default function ProductDetailPage() {
     loadData();
   }, [params.id]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
     if (!session) {
       router.push(`/login?callbackUrl=/products/${product.id}`);
       return;
     }
-    const existing = JSON.parse(localStorage.getItem('cart') || '[]') as Array<{ id: string; quantity: number }>;
-    const idx = existing.findIndex((i) => i.id === product.id);
-    if (idx >= 0) {
-      existing[idx].quantity += quantity;
-    } else {
-      existing.push({ id: product.id, quantity });
+
+    try {
+      // Save to database
+      const res = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product.id, quantity }),
+      });
+
+      if (!res.ok) {
+        console.error('Failed to add to cart');
+        return;
+      }
+
+      // Also mirror in localStorage for quick access
+      const existing = JSON.parse(localStorage.getItem('cart') || '[]') as Array<{ id: string; quantity: number }>;
+      const idx = existing.findIndex((i) => i.id === product.id);
+      if (idx >= 0) {
+        existing[idx].quantity += quantity;
+      } else {
+        existing.push({ id: product.id, quantity });
+      }
+      localStorage.setItem('cart', JSON.stringify(existing));
+
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2500);
+    } catch (err) {
+      console.error('Error adding to cart:', err);
     }
-    localStorage.setItem('cart', JSON.stringify(existing));
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2500);
   };
 
   if (loading) {
