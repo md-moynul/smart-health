@@ -42,7 +42,7 @@ function SignupContent() {
       } else {
         setError('Image upload failed. You can still register without an avatar.');
       }
-    } catch (err: any) {
+    } catch (err) {
       setError('Failed to upload image to Imgbb. You can register without an avatar.');
     } finally {
       setIsUploading(false);
@@ -60,6 +60,7 @@ function SignupContent() {
         password,
         name,
         image: imageUrl || undefined,
+        role: 'user',
       });
 
       if (response.error) {

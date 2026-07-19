@@ -324,6 +324,7 @@ export default function ProductDetailPage() {
                   key={p.id}
                   id={p.id}
                   name={p.name}
+                  genericName={p.genericName}
                   price={p.price}
                   category={p.category}
                   image={p.image}
@@ -331,6 +332,7 @@ export default function ProductDetailPage() {
                   reviewCount={p.reviewCount}
                   badge={p.badge}
                   inStock={p.inStock}
+                  requiresPrescription={p.requiresPrescription}
                 />
               ))}
             </div>
