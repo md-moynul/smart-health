@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -51,6 +52,7 @@ export default function MedicinesManagement() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMedicines();
   }, []);
 

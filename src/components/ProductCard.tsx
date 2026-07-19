@@ -161,6 +161,7 @@ export default function ProductCard({
         {/* Conditional Renderer for Custom Asset Images vs Fallback vector graphics */}
         <div className="w-full h-full flex items-center justify-center transform transition-transform duration-500 ease-out group-hover:scale-105">
           {image && image.trim() !== '' ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img 
               src={image} 
               alt={name} 
@@ -189,7 +190,7 @@ export default function ProductCard({
         <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
           {category}
         </span>
-        <h3 className="mt-1 text-sm font-semibold text-zinc-900 line-clamp-2 leading-snug min-h-[40px]">
+        <h3 className="mt-1 text-sm font-semibold text-zinc-900 line-clamp-2 leading-snug min-h-10">
           {name}
         </h3>
         {genericName && (

@@ -40,6 +40,7 @@ function LoginContent() {
         router.push(targetUrl);
         router.refresh();
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err?.message || 'An unexpected error occurred. Please try again.');
     } finally {
@@ -53,7 +54,7 @@ function LoginContent() {
         {/* Logo/Branding */}
         <div className="text-center">
           <Link href="/" className="inline-block">
-            <span className="bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+            <span className="bg-linear-to-r from-emerald-500 to-teal-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
               SmartHealth
             </span>
           </Link>

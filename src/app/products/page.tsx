@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
 import { CATEGORIES, Product } from '@/lib/products';
 
@@ -107,7 +107,7 @@ export default function ProductsPage() {
               id="sort-select"
               value={sortBy}
               onChange={(e) => handleSort(e.target.value as typeof sortBy)}
-              className="rounded-xl border border-zinc-200 bg-white py-2.5 pl-3 pr-8 text-sm text-zinc-700 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              className="rounded-xl border border-zinc-200 bg-white py-2.5 pl-3 pr-8 text-sm text-zinc-700 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer"
             >
               <option value="default">Featured</option>
               <option value="rating">Top Rated</option>
@@ -124,7 +124,7 @@ export default function ProductsPage() {
               key={cat}
               id={`filter-${cat.replace(/\s+/g, '-').replace(/&/g, 'and').toLowerCase()}`}
               onClick={() => handleCategory(cat)}
-              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                 selectedCategory === cat
                   ? 'bg-zinc-950 text-white shadow-sm'
                   : 'bg-white border border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:text-zinc-900'

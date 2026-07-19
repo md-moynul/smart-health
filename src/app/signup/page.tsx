@@ -42,6 +42,7 @@ function SignupContent() {
       } else {
         setError('Image upload failed. You can still register without an avatar.');
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       setError('Failed to upload image to Imgbb. You can register without an avatar.');
     } finally {
@@ -78,6 +79,7 @@ function SignupContent() {
         router.push(targetUrl);
         router.refresh();
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err?.message || 'An unexpected error occurred during signup.');
     } finally {
@@ -91,7 +93,7 @@ function SignupContent() {
         {/* Branding */}
         <div className="text-center">
           <Link href="/" className="inline-block">
-            <span className="bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+            <span className="bg-linear-to-r from-emerald-500 to-teal-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
               SmartHealth
             </span>
           </Link>

@@ -42,8 +42,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!isAdmin) {
     return (
       <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-white px-6 py-24 sm:py-32 lg:px-8">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.rose.50),white)] opacity-60" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] rounded-full bg-linear-to-tr from-rose-100/20 to-orange-100/20 blur-3xl" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,var(--color-rose-50),white)] opacity-60" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-75 h-75 sm:w-125 sm:h-125 rounded-full bg-linear-to-tr from-rose-100/20 to-orange-100/20 blur-3xl" />
         <div className="mx-auto max-w-md text-center">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-rose-50 border border-rose-100 shadow-sm text-rose-600 animate-[bounce_3s_infinite]">
             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -114,11 +114,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       
       {/* ─── DESKTOP SIDEBAR ─── */}
       <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 border-r border-zinc-150 bg-white">
-        <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto">
+        <div className="flex flex-col grow pt-5 pb-4 overflow-y-auto">
           {/* Logo */}
-          <div className="flex items-center flex-shrink-0 px-6">
+          <div className="flex items-center shrink-0 px-6">
             <Link href="/" className="flex items-center space-x-2">
-              <span className="bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-xl font-bold tracking-tight text-transparent">
+              <span className="bg-linear-to-r from-emerald-500 to-teal-600 bg-clip-text text-xl font-bold tracking-tight text-transparent">
                 SmartHealth Admin
               </span>
             </Link>
@@ -147,10 +147,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* User profile section at the bottom of sidebar */}
-        <div className="flex-shrink-0 flex border-t border-zinc-150 p-4">
+        <div className="shrink-0 flex border-t border-zinc-150 p-4">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-3">
-              <div className="h-9 w-9 rounded-full bg-emerald-50 border border-zinc-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+              <div className="h-9 w-9 rounded-full bg-emerald-50 border border-zinc-200 overflow-hidden flex items-center justify-center shrink-0">
                 {user?.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={user.image} alt={user.name} className="h-full w-full object-cover" />
@@ -160,7 +160,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </span>
                 )}
               </div>
-              <div className="truncate max-w-[110px]">
+              <div className="truncate max-w-27.5">
                 <p className="text-xs font-semibold text-zinc-900 truncate">{user?.name || 'Admin'}</p>
                 <p className="text-[10px] font-medium text-emerald-600 uppercase tracking-wider">Admin</p>
               </div>
@@ -183,7 +183,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex flex-col flex-1 overflow-hidden lg:pl-64">
         
         {/* Mobile Header bar */}
-        <header className="lg:hidden flex items-center justify-between bg-white border-b border-zinc-150 h-16 px-4 flex-shrink-0 z-20">
+        <header className="lg:hidden flex items-center justify-between bg-white border-b border-zinc-150 h-16 px-4 shrink-0 z-20">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
@@ -194,7 +194,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </svg>
           </button>
           
-          <div className="font-bold text-lg bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+          <div className="font-bold text-lg bg-linear-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
             SmartHealth Admin
           </div>
 
@@ -215,7 +215,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             
             <div className="fixed inset-y-0 left-0 flex flex-col w-64 bg-white border-r border-zinc-150 pt-5 pb-4">
               <div className="flex items-center justify-between px-6">
-                <span className="bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-lg font-bold tracking-tight text-transparent">
+                <span className="bg-linear-to-r from-emerald-500 to-teal-600 bg-clip-text text-lg font-bold tracking-tight text-transparent">
                   SmartHealth Admin
                 </span>
                 <button
@@ -228,7 +228,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </button>
               </div>
 
-              <nav className="mt-8 flex-grow px-4 space-y-1">
+              <nav className="mt-8 grow px-4 space-y-1">
                 {menuItems.map((item) => {
                   const active = pathname === item.href;
                   return (

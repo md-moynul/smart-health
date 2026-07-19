@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useState } from 'react';
@@ -100,7 +101,7 @@ export default function AddProductPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-[1400px] mx-auto px-2 sm:px-4 lg:px-6">
+    <div className="space-y-6 max-w-350 mx-auto px-2 sm:px-4 lg:px-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">Add New Product</h1>

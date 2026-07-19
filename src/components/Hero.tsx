@@ -4,7 +4,7 @@ export default function Hero() {
   return (
     <section className="relative overflow-hidden bg-white py-20 sm:py-32">
       {/* Background decoration */}
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.emerald.50),white)] opacity-40" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,var(--color-emerald-50),white)] opacity-40" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-12 lg:items-center">
@@ -19,7 +19,7 @@ export default function Hero() {
 
             <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
               Healthcare made simple,{' '}
-              <span className="bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
                 care delivered fast.
               </span>
             </h1>
@@ -46,9 +46,9 @@ export default function Hero() {
 
           {/* Right Visual */}
           <div className="mt-16 lg:mt-0 lg:col-span-5 flex justify-center">
-            <div className="relative w-full max-w-[420px] aspect-square rounded-3xl bg-zinc-50 border border-zinc-100 p-8 shadow-2xl shadow-zinc-100 flex items-center justify-center overflow-hidden group">
+            <div className="relative w-full max-w-105 aspect-square rounded-3xl bg-zinc-50 border border-zinc-100 p-8 shadow-2xl shadow-zinc-100 flex items-center justify-center overflow-hidden group">
               {/* Decorative grid pattern */}
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.04)_1px,transparent_1px)] bg-[size:24px_24px]" />
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.04)_1px,transparent_1px)] bg-size-[24px_24px]" />
 
               {/* Main Circular Ring Visualizer */}
               <div className="relative w-72 h-72 rounded-full border-4 border-dashed border-emerald-500/20 flex items-center justify-center animate-[spin_60s_linear_infinite] group-hover:border-emerald-500/40">

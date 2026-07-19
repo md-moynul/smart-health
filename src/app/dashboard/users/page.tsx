@@ -26,6 +26,7 @@ export default function UsersManagement() {
       } else {
         setError(data.error || 'Failed to load users');
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       setError('Network error fetching users list.');
     } finally {
@@ -34,6 +35,7 @@ export default function UsersManagement() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUsers();
   }, []);
 
@@ -104,7 +106,7 @@ export default function UsersManagement() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           <h3 className="text-sm font-semibold text-zinc-900">No users found</h3>
-          <p className="text-xs mt-1">We couldn't find any account matching your search criteria.</p>
+          <p className="text-xs mt-1">We couldn&apos;t find any account matching your search criteria.</p>
         </div>
       ) : (
         <div className="bg-white border border-zinc-150 rounded-2xl shadow-2xs overflow-hidden">
@@ -123,7 +125,7 @@ export default function UsersManagement() {
                   <tr key={u.id} className="hover:bg-zinc-50/30 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
-                        <div className="h-9 w-9 rounded-full bg-emerald-50 border border-zinc-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <div className="h-9 w-9 rounded-full bg-emerald-50 border border-zinc-200 overflow-hidden flex items-center justify-center shrink-0">
                           {u.image ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={u.image} alt={u.name} className="h-full w-full object-cover" />

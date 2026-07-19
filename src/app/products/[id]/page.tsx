@@ -167,7 +167,7 @@ export default function ProductDetailPage() {
         {/* Main Product Section */}
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
           {/* Product Image / Visual Showcase Container */}
-          <div className="relative flex items-center justify-center rounded-3xl border border-zinc-150 bg-white p-8 lg:p-12 min-h-[380px] md:min-h-[460px] shadow-xs">
+          <div className="relative flex items-center justify-center rounded-3xl border border-zinc-150 bg-white p-8 lg:p-12 min-h-95 md:min-h-115 shadow-xs">
             {product.requiresPrescription && (
               <span className="absolute top-4 left-4 z-10 rounded-full bg-blue-600 px-3 py-1 text-[11px] font-bold tracking-wider text-white uppercase shadow-xs">Rx Only</span>
             )}
@@ -175,13 +175,13 @@ export default function ProductDetailPage() {
               <span className="absolute top-4 right-4 z-10 rounded-full bg-zinc-900 px-3 py-1 text-[11px] font-semibold tracking-wider text-white uppercase shadow-xs">{product.badge}</span>
             )}
             
-            <div className="w-full h-full flex items-center justify-center max-h-[360px]">
+            <div className="w-full h-full flex items-center justify-center max-h-90">
               {product.image && product.image.trim() !== '' ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img 
                   src={product.image} 
                   alt={product.name} 
-                  className="max-w-full max-h-[340px] w-auto h-auto object-contain transition-transform duration-300 hover:scale-102"
+                  className="max-w-full max-h-85 w-auto h-auto object-contain transition-transform duration-300 hover:scale-102"
                   loading="eager"
                   onError={(e) => {
                     // Safe injection fallback if runtime asset parsing errors out
@@ -239,7 +239,7 @@ export default function ProductDetailPage() {
             {/* Prescription warning */}
             {product.requiresPrescription && (
               <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
-                <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <p className="text-xs font-medium text-blue-800 leading-normal">
@@ -261,7 +261,7 @@ export default function ProductDetailPage() {
             <div className="mt-5 space-y-2">
               {product.details.map((detail, i) => (
                 <div key={i} className="flex items-start gap-2.5">
-                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                   <span className="text-sm text-zinc-600">{detail}</span>
@@ -274,7 +274,7 @@ export default function ProductDetailPage() {
               {/* Not logged in warning */}
               {!session && (
                 <div className="flex items-center gap-2.5 rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
-                  <svg className="h-4 w-4 flex-shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="h-4 w-4 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                   </svg>
                   <p className="text-xs font-medium text-amber-700">

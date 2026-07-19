@@ -1,10 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 export default function Footer() {
-  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
 
   /* Footer visible on dashboard */
@@ -16,7 +14,7 @@ export default function Footer() {
           
           {/* Logo & Info column */}
           <div className="space-y-6">
-            <span className="bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-xl font-bold tracking-tight text-transparent">
+            <span className="bg-linear-to-r from-emerald-500 to-teal-600 bg-clip-text text-xl font-bold tracking-tight text-transparent">
               SmartHealth
             </span>
             <p className="text-sm text-zinc-550 max-w-xs">

@@ -20,7 +20,7 @@ function CartContent() {
       <header className="bg-white border-b border-zinc-150 py-6">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <Link href="/" className="inline-flex items-center space-x-2">
-            <span className="bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-xl font-bold tracking-tight text-transparent">
+            <span className="bg-linear-to-r from-emerald-500 to-teal-600 bg-clip-text text-xl font-bold tracking-tight text-transparent">
               SmartHealth
             </span>
           </Link>

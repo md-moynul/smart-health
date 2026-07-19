@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 
 export default function Navbar() {
@@ -11,7 +11,6 @@ export default function Navbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const pathname = usePathname();
 
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
