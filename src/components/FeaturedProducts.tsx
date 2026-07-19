@@ -1,9 +1,32 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ProductCard from './ProductCard';
-import { ALL_PRODUCTS } from '@/lib/products';
+import type { Product } from '@/lib/products';
 
 export default function FeaturedProducts() {
-  const featured = ALL_PRODUCTS.slice(0, 8);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function getProducts() {
+      try {
+        const res = await fetch('/api/products');
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setProducts(data);
+        }
+      } catch (err) {
+        console.error('Error fetching featured products:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    getProducts();
+  }, []);
+
+  const featured = products.slice(0, 8);
 
   return (
     <section className="bg-white py-20 sm:py-24">
@@ -35,22 +58,39 @@ export default function FeaturedProducts() {
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((product) => (
-            <ProductCard
-              key={product.id}
-              id={product.id}
-              name={product.name}
-              genericName={product.genericName}
-              price={product.price}
-              category={product.category}
-              image={product.image}
-              rating={product.rating}
-              reviewCount={product.reviewCount}
-              badge={product.badge}
-              inStock={product.inStock}
-              requiresPrescription={product.requiresPrescription}
-            />
-          ))}
+          {loading ? (
+            [...Array(4)].map((_, i) => (
+              <div key={i} className="rounded-2xl border border-zinc-100 bg-white p-4 shadow-sm space-y-4 animate-pulse">
+                <div className="aspect-square w-full rounded-xl bg-zinc-100" />
+                <div className="h-4 bg-zinc-100 rounded-md w-1/4" />
+                <div className="space-y-2">
+                  <div className="h-5 bg-zinc-200 rounded-md w-3/4" />
+                  <div className="h-4 bg-zinc-100 rounded-md w-1/2" />
+                </div>
+                <div className="flex items-center justify-between pt-2">
+                  <div className="h-6 bg-zinc-200 rounded-md w-1/5" />
+                  <div className="h-9 bg-zinc-150 rounded-full w-20" />
+                </div>
+              </div>
+            ))
+          ) : (
+            featured.map((product) => (
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                genericName={product.genericName}
+                price={product.price}
+                category={product.category}
+                image={product.image}
+                rating={product.rating}
+                reviewCount={product.reviewCount}
+                badge={product.badge}
+                inStock={product.inStock}
+                requiresPrescription={product.requiresPrescription}
+              />
+            ))
+          )}
         </div>
       </div>
     </section>

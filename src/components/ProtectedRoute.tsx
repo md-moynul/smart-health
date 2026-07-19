@@ -12,9 +12,9 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   useEffect(() => {
     if (!isPending && !session) {
       // Store the requested path in sessionStorage to emulate location state
-      sessionStorage.setItem('redirectFrom', pathname);
-      // Also pass it as a query parameter for robustness
-      router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+      const safePath = pathname || '';
+      sessionStorage.setItem('redirectFrom', safePath);
+      router.push(`/login?callbackUrl=${encodeURIComponent(safePath)}`);
     }
   }, [session, isPending, pathname, router]);
 

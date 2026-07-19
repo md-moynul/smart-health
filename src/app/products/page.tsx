@@ -1,51 +1,43 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
-import { ALL_PRODUCTS, CATEGORIES } from '@/lib/products';
+import { CATEGORIES, Product } from '@/lib/products';
 
 const PRODUCTS_PER_PAGE = 8;
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'rating'>('default');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filtered = useMemo(() => {
-    let result = ALL_PRODUCTS;
+  useEffect(() => {
+    async function getProducts() {
+      try {
+        setLoading(true);
+        const queryParams = new URLSearchParams();
+        if (search.trim()) queryParams.set("search", search);
+        if (selectedCategory !== "All") queryParams.set("category", selectedCategory);
+        if (sortBy !== "default") queryParams.set("sort", sortBy);
 
-    // Search
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q)
-      );
+        const res = await fetch(`/api/products?${queryParams.toString()}`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setProducts(data);
+        }
+      } catch (err) {
+        console.error('Error fetching products:', err);
+      } finally {
+        setLoading(false);
+      }
     }
-
-    // Category filter
-    if (selectedCategory !== 'All') {
-      result = result.filter((p) => p.category === selectedCategory);
-    }
-
-    // Sort
-    switch (sortBy) {
-      case 'price-asc':
-        result = [...result].sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        result = [...result].sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        result = [...result].sort((a, b) => b.rating - a.rating);
-        break;
-    }
-
-    return result;
+    getProducts();
   }, [search, selectedCategory, sortBy]);
+
+  const filtered = products;
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PRODUCTS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
@@ -153,7 +145,24 @@ export default function ProductsPage() {
         </div>
 
         {/* Product Grid */}
-        {paginated.length > 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="rounded-2xl border border-zinc-100 bg-white p-4 shadow-sm space-y-4 animate-pulse">
+                <div className="aspect-square w-full rounded-xl bg-zinc-100" />
+                <div className="h-4 bg-zinc-100 rounded-md w-1/4" />
+                <div className="space-y-2">
+                  <div className="h-5 bg-zinc-200 rounded-md w-3/4" />
+                  <div className="h-4 bg-zinc-100 rounded-md w-1/2" />
+                </div>
+                <div className="flex items-center justify-between pt-2">
+                  <div className="h-6 bg-zinc-200 rounded-md w-1/5" />
+                  <div className="h-9 bg-zinc-150 rounded-full w-20" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : paginated.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {paginated.map((product) => (
               <ProductCard

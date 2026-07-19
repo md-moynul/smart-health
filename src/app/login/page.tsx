@@ -25,21 +25,21 @@ function LoginContent() {
         password,
       });
       console.log(response)
-      // if (response.error) {
-      //   setError(response.error.message || 'Invalid email or password.');
-      // } else {
-      //   // Retrieve the redirect path from query parameter or sessionStorage
-      //   const callbackUrl = searchParams.get('callbackUrl');
-      //   const redirectFrom = sessionStorage.getItem('redirectFrom');
-      //   const targetUrl = callbackUrl || redirectFrom || '/';
+      if (response.error) {
+        setError(response.error.message || 'Invalid email or password.');
+      } else {
+        // Retrieve the redirect path from query parameter or sessionStorage
+        const callbackUrl = searchParams.get('callbackUrl');
+        const redirectFrom = sessionStorage.getItem('redirectFrom');
+        const targetUrl = callbackUrl || redirectFrom || '/';
 
-      //   // Clear sessionStorage redirect state
-      //   sessionStorage.removeItem('redirectFrom');
+        // Clear sessionStorage redirect state
+        sessionStorage.removeItem('redirectFrom');
 
-      //   // Redirect back
-      //   router.push(targetUrl);
-      //   router.refresh();
-      // }
+        // Redirect back
+        router.push(targetUrl);
+        router.refresh();
+      }
     } catch (err: any) {
       setError(err?.message || 'An unexpected error occurred. Please try again.');
     } finally {

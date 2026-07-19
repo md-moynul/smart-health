@@ -127,6 +127,7 @@ export default function ProductCard({
   genericName,
   price,
   category,
+  image,
   rating,
   reviewCount,
   badge,
@@ -134,46 +135,70 @@ export default function ProductCard({
   requiresPrescription,
 }: ProductCardProps) {
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-150 bg-white transition-all duration-300 hover:border-zinc-200 hover:shadow-xl hover:shadow-zinc-100/80 hover:-translate-y-0.5">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-150 bg-white transition-all duration-300 hover:border-zinc-200 hover:shadow-xl hover:shadow-zinc-100/80 hover:-translate-y-0.5 w-full max-w-sm">
       {/* Image / Icon Area */}
-      <div className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden bg-zinc-50">
+      <div className="relative flex aspect-4/3 w-full items-center justify-center overflow-hidden bg-zinc-50 border-b border-zinc-100">
         {/* Rx badge */}
         {requiresPrescription && (
-          <span className="absolute top-3 left-3 z-10 rounded-full bg-blue-600 px-2.5 py-1 text-[10px] font-bold tracking-wider text-white uppercase">
+          <span className="absolute top-3 left-3 z-10 rounded-full bg-blue-600 px-2.5 py-1 text-[10px] font-bold tracking-wider text-white uppercase shadow-sm">
             Rx
           </span>
         )}
         {/* Other badges */}
         {badge && badge !== 'Rx Only' && (
-          <span className="absolute top-3 right-3 z-10 rounded-full bg-zinc-900 px-2.5 py-1 text-[10px] font-semibold tracking-wider text-white uppercase">
+          <span className="absolute top-3 right-3 z-10 rounded-full bg-zinc-900 px-2.5 py-1 text-[10px] font-semibold tracking-wider text-white uppercase shadow-sm">
             {badge}
           </span>
         )}
         {!inStock && (
-          <span className="absolute bottom-3 left-3 z-10 rounded-full bg-zinc-200 px-2.5 py-1 text-[10px] font-semibold tracking-wider text-zinc-500 uppercase">
-            Out of Stock
-          </span>
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 backdrop-blur-xs">
+            <span className="rounded-full bg-zinc-200 px-3 py-1 text-[10px] font-semibold tracking-wider text-zinc-650 uppercase">
+              Out of Stock
+            </span>
+          </div>
         )}
-        <div className="transform transition-transform duration-500 ease-out group-hover:scale-110">
-          <PharmacyIcon category={category} />
+
+        {/* Conditional Renderer for Custom Asset Images vs Fallback vector graphics */}
+        <div className="w-full h-full flex items-center justify-center transform transition-transform duration-500 ease-out group-hover:scale-105">
+          {image && image.trim() !== '' ? (
+            <img 
+              src={image} 
+              alt={name} 
+              className="w-full h-full object-contain p-4"
+              loading="lazy"
+              onError={(e) => {
+                // Safe fallback configuration if the CDN asset path fails to load
+                (e.target as HTMLImageElement).style.display = 'none';
+                const container = (e.target as HTMLImageElement).parentElement;
+                if (container) {
+                  container.setAttribute('data-failed', 'true');
+                }
+              }}
+            />
+          ) : null}
+
+          {/* Render fallback layout vector when path is empty or validation flags an image loading crash */}
+          {(!image || image.trim() === '') && (
+            <PharmacyIcon category={category} />
+          )}
         </div>
       </div>
 
-      {/* Info */}
+      {/* Info Content Area */}
       <div className="flex flex-1 flex-col p-4">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
           {category}
         </span>
-        <h3 className="mt-1 text-sm font-semibold text-zinc-900 line-clamp-2 leading-snug">
+        <h3 className="mt-1 text-sm font-semibold text-zinc-900 line-clamp-2 leading-snug min-h-[40px]">
           {name}
         </h3>
         {genericName && (
           <p className="mt-0.5 text-[11px] italic text-zinc-400 line-clamp-1">{genericName}</p>
         )}
 
-        <div className="mt-2">
+        <div className="mt-2.5 flex items-center gap-2">
           <StarRating rating={rating} />
-          <span className="text-[10px] text-zinc-400">{reviewCount.toLocaleString()} reviews</span>
+          <span className="text-[10px] text-zinc-400">({reviewCount.toLocaleString()} reviews)</span>
         </div>
 
         <div className="mt-auto pt-4 flex items-center justify-between">
@@ -181,7 +206,7 @@ export default function ProductCard({
           <Link
             href={`/products/${id}`}
             id={`view-product-${id}`}
-            className="rounded-full bg-zinc-950 px-3.5 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="rounded-full bg-zinc-950 px-3.5 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-emerald-600 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50"
           >
             View Details
           </Link>

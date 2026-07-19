@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ALL_PRODUCTS } from '@/lib/products';
+import { Product } from '@/lib/products';
 import { authClient } from '@/lib/auth-client';
 import ProductCard from '@/components/ProductCard';
 
@@ -28,7 +28,6 @@ function StarRating({ rating, reviewCount }: { rating: number; reviewCount: numb
     </div>
   );
 }
-
 
 function PharmacyIcon({ category, large = false }: { category: string; large?: boolean }) {
   const size = large ? 'w-28 h-28' : 'w-16 h-16';
@@ -60,16 +59,76 @@ function PharmacyIcon({ category, large = false }: { category: string; large?: b
   }
 }
 
-
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = authClient.useSession();
 
-  const product = ALL_PRODUCTS.find((p) => p.id === params.id);
-
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    if (!params.id) return;
+    async function loadData() {
+      try {
+        setLoading(true);
+        const prodRes = await fetch(`/api/products/${params.id}`);
+        if (!prodRes.ok) {
+          setProduct(null);
+          setLoading(false);
+          return;
+        }
+        const prodData = await prodRes.json();
+        setProduct(prodData);
+
+        const listRes = await fetch('/api/products');
+        const listData = await listRes.json();
+        if (Array.isArray(listData)) {
+          const related = listData.filter(
+            (p) => p.category === prodData.category && p.id !== prodData.id
+          ).slice(0, 4);
+          setRelatedProducts(related);
+        }
+      } catch (err) {
+        console.error('Error loading product details:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [params.id]);
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    if (!session) {
+      router.push(`/login?callbackUrl=/products/${product.id}`);
+      return;
+    }
+    const existing = JSON.parse(localStorage.getItem('cart') || '[]') as Array<{ id: string; quantity: number }>;
+    const idx = existing.findIndex((i) => i.id === product.id);
+    if (idx >= 0) {
+      existing[idx].quantity += quantity;
+    } else {
+      existing.push({ id: product.id, quantity });
+    }
+    localStorage.setItem('cart', JSON.stringify(existing));
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2500);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 font-sans">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+          <p className="text-sm font-medium text-zinc-500">Loading product formulation...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -89,28 +148,6 @@ export default function ProductDetailPage() {
     );
   }
 
-  const handleAddToCart = () => {
-    if (!session) {
-      router.push(`/login?callbackUrl=/products/${product.id}`);
-      return;
-    }
-    // Cart logic: store in localStorage for now
-    const existing = JSON.parse(localStorage.getItem('cart') || '[]') as Array<{ id: string; quantity: number }>;
-    const idx = existing.findIndex((i) => i.id === product.id);
-    if (idx >= 0) {
-      existing[idx].quantity += quantity;
-    } else {
-      existing.push({ id: product.id, quantity });
-    }
-    localStorage.setItem('cart', JSON.stringify(existing));
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2500);
-  };
-
-  const relatedProducts = ALL_PRODUCTS.filter(
-    (p) => p.category === product.category && p.id !== product.id
-  ).slice(0, 4);
-
   return (
     <div className="min-h-screen bg-zinc-50 font-sans pb-20">
       {/* Breadcrumb */}
@@ -129,17 +166,41 @@ export default function ProductDetailPage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8">
         {/* Main Product Section */}
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-          {/* Product Image */}
-          <div className="relative flex items-center justify-center rounded-3xl border border-zinc-150 bg-zinc-50 p-12 min-h-[340px]">
+          {/* Product Image / Visual Showcase Container */}
+          <div className="relative flex items-center justify-center rounded-3xl border border-zinc-150 bg-white p-8 lg:p-12 min-h-[380px] md:min-h-[460px] shadow-xs">
             {product.requiresPrescription && (
-              <span className="absolute top-4 left-4 rounded-full bg-blue-600 px-3 py-1 text-[11px] font-bold tracking-wider text-white uppercase">Rx Only</span>
+              <span className="absolute top-4 left-4 z-10 rounded-full bg-blue-600 px-3 py-1 text-[11px] font-bold tracking-wider text-white uppercase shadow-xs">Rx Only</span>
             )}
             {product.badge && product.badge !== 'Rx Only' && (
-              <span className="absolute top-4 right-4 rounded-full bg-zinc-900 px-3 py-1 text-[11px] font-semibold tracking-wider text-white uppercase">{product.badge}</span>
+              <span className="absolute top-4 right-4 z-10 rounded-full bg-zinc-900 px-3 py-1 text-[11px] font-semibold tracking-wider text-white uppercase shadow-xs">{product.badge}</span>
             )}
-            <div className="flex flex-col items-center gap-6">
-              <PharmacyIcon category={product.category} large />
-              <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400">{product.category}</span>
+            
+            <div className="w-full h-full flex items-center justify-center max-h-[360px]">
+              {product.image && product.image.trim() !== '' ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img 
+                  src={product.image} 
+                  alt={product.name} 
+                  className="max-w-full max-h-[340px] w-auto h-auto object-contain transition-transform duration-300 hover:scale-102"
+                  loading="eager"
+                  onError={(e) => {
+                    // Safe injection fallback if runtime asset parsing errors out
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    const parentEl = (e.target as HTMLImageElement).parentElement;
+                    if (parentEl) {
+                      parentEl.setAttribute('data-failed', 'true');
+                    }
+                  }}
+                />
+              ) : null}
+
+              {/* Falling back cleanly to standard vector icons when link mapping returns null */}
+              {(!product.image || product.image.trim() === '') && (
+                <div className="flex flex-col items-center gap-6">
+                  <PharmacyIcon category={product.category} large />
+                  <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400">{product.category}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -152,15 +213,15 @@ export default function ProductDetailPage() {
               {product.name}
             </h1>
             {product.genericName && (
-              <p className="mt-1 text-sm italic text-zinc-400">Generic: {product.genericName}</p>
+              <p className="mt-1 text-sm italic text-zinc-400 font-mono">Generic Name: {product.genericName}</p>
             )}
-            <p className="mt-0.5 text-xs text-zinc-400">By {product.manufacturer}</p>
+            <p className="mt-0.5 text-xs text-zinc-400 font-medium">Manufactured by {product.manufacturer}</p>
 
-            <div className="mt-3">
+            <div className="mt-4">
               <StarRating rating={product.rating} reviewCount={product.reviewCount} />
             </div>
 
-            <div className="mt-4 flex items-end gap-4">
+            <div className="mt-5 flex items-end gap-4">
               <span className="text-3xl font-bold text-zinc-950">${product.price.toFixed(2)}</span>
               {product.inStock ? (
                 <span className="inline-flex items-center gap-1.5 pb-0.5 text-sm font-semibold text-emerald-600">
@@ -177,27 +238,27 @@ export default function ProductDetailPage() {
 
             {/* Prescription warning */}
             {product.requiresPrescription && (
-              <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+              <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
                 <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <p className="text-xs font-medium text-blue-800">
-                  <span className="font-bold">Prescription required.</span> A valid prescription from a licensed healthcare provider must be submitted before this item is dispensed.
+                <p className="text-xs font-medium text-blue-800 leading-normal">
+                  <span className="font-bold">Prescription required.</span> A valid prescription from a licensed healthcare provider must be submitted before this item can be fulfilled and shipped.
                 </p>
               </div>
             )}
 
-            <p className="mt-5 text-sm leading-relaxed text-zinc-600">{product.description}</p>
+            <p className="mt-6 text-sm leading-relaxed text-zinc-600">{product.description}</p>
 
             {/* Dosage Instructions */}
             {product.dosage && (
-              <div className="mt-4 rounded-xl border border-zinc-150 bg-zinc-50 px-4 py-3">
+              <div className="mt-5 rounded-xl border border-zinc-150 bg-zinc-50 px-4 py-3">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Dosage &amp; Administration</p>
                 <p className="text-sm font-medium text-zinc-700">{product.dosage}</p>
               </div>
             )}
 
-            <div className="mt-5 space-y-1.5">
+            <div className="mt-5 space-y-2">
               {product.details.map((detail, i) => (
                 <div key={i} className="flex items-start gap-2.5">
                   <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -228,7 +289,7 @@ export default function ProductDetailPage() {
 
               <div className="flex items-center gap-3">
                 {/* Quantity Selector */}
-                <div className="flex items-center rounded-xl border border-zinc-200 bg-white overflow-hidden">
+                <div className="flex items-center rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-xs">
                   <button
                     id="qty-decrease"
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -240,7 +301,7 @@ export default function ProductDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
                     </svg>
                   </button>
-                  <span id="qty-display" className="w-10 text-center text-sm font-bold text-zinc-900">
+                  <span id="qty-display" className="w-10 text-center text-sm font-bold text-zinc-900 select-none">
                     {quantity}
                   </span>
                   <button
@@ -260,14 +321,12 @@ export default function ProductDetailPage() {
                   id="add-to-cart-btn"
                   onClick={handleAddToCart}
                   disabled={!product.inStock}
-                  className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold shadow-xs transition-all duration-200 ${
                     added
                       ? 'bg-emerald-500 text-white'
                       : !product.inStock
                       ? 'bg-zinc-100 text-zinc-400 cursor-not-allowed'
-                      : !session
-                      ? 'bg-zinc-950 text-white hover:bg-emerald-600'
-                      : 'bg-zinc-950 text-white hover:bg-emerald-600'
+                      : 'bg-zinc-950 text-white hover:bg-emerald-600 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50'
                   }`}
                 >
                   {added ? (
@@ -313,7 +372,7 @@ export default function ProductDetailPage() {
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <div className="mt-16">
+          <div className="mt-20">
             <h2 className="text-xl font-bold tracking-tight text-zinc-950 mb-6">
               More in{' '}
               <span className="text-emerald-600">{product.category}</span>
