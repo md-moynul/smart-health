@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState, useRef } from 'react';
@@ -48,16 +49,20 @@ export default function PrescriptionAnalyzerPage() {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000';
       const res = await fetch(`${baseUrl}/api/analyze-prescription`, {
         method: 'POST',
-        body: formData,
+        body: formData, // Browser will handle Content-Type header
       });
-      console.log(res)
-      if (!res.ok) {
-        throw new Error('Analysis failed. Please try again.');
-      }
 
       const data = await res.json();
+      console.log("Response Data:", data);
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Analysis failed. Please try again.');
+      }
+
       setResult(data.result);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
+      console.error("Frontend Error Details:", err);
       setError(err.message || 'An error occurred during analysis.');
     } finally {
       setIsAnalyzing(false);
@@ -90,7 +95,7 @@ export default function PrescriptionAnalyzerPage() {
           </div>
         ) : (
           <div className="flex flex-col items-center">
-            <div className="relative w-full max-w-sm aspect-[3/4] mb-6 rounded-2xl overflow-hidden border border-gray-200 bg-gray-100">
+            <div className="relative w-full max-w-sm aspect-3/4 mb-6 rounded-2xl overflow-hidden border border-gray-200 bg-gray-100">
               <img src={previewUrl} alt="Prescription preview" className="object-cover w-full h-full" />
               <button
                 onClick={clearFile}
@@ -137,7 +142,7 @@ export default function PrescriptionAnalyzerPage() {
         )}
       </div>
 
-      {/* Analysis Results Skeleton Loader or Actual Results */}
+      {/* Skeleton Loader */}
       {isAnalyzing && (
         <div className="w-full max-w-2xl mt-8">
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm animate-pulse">

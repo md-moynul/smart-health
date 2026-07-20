@@ -15,6 +15,7 @@ export const ChatWidget = () => {
       api: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api/chat`,
     }),
   });
+  console.log("Messages:", messages);
 
   const isLoading = status === 'submitted' || status === 'streaming';
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -46,7 +47,7 @@ export const ChatWidget = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 flex h-[500px] w-[350px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl sm:w-[400px]">
+        <div className="fixed bottom-24 right-6 z-50 flex h-125 w-87.5 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl sm:w-100">
           {/* Header */}
           <div className="flex items-center justify-between bg-teal-600 px-4 py-3 text-white">
             <div>
@@ -65,7 +66,7 @@ export const ChatWidget = () => {
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 text-teal-600">
                   <Bot size={24} />
                 </div>
-                <p className="text-sm">Hi! I'm your SmartHealth assistant. How can I help you today?</p>
+                <p className="text-sm">Hi! I&apos;m your SmartHealth assistant. How can I help you today?</p>
               </div>
             ) : (
               messages.map((m) => <ChatMessage key={m.id} message={m} />)
