@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Product } from '@/lib/products';
 import { authClient } from '@/lib/auth-client';
 import ProductCard from '@/components/ProductCard';
+import { toast } from 'react-toastify';
 
 function StarRating({ rating, reviewCount }: { rating: number; reviewCount: number }) {
   return (
@@ -117,7 +118,7 @@ export default function ProductDetailPage() {
       });
 
       if (!res.ok) {
-        console.error('Failed to add to cart');
+        toast.error('Failed to add to cart');
         return;
       }
 
@@ -131,10 +132,12 @@ export default function ProductDetailPage() {
       }
       localStorage.setItem('cart', JSON.stringify(existing));
 
+      toast.success(`${product.name} added to cart!`);
       setAdded(true);
       setTimeout(() => setAdded(false), 2500);
     } catch (err) {
       console.error('Error adding to cart:', err);
+      toast.error('Something went wrong. Please try again.');
     }
   };
 

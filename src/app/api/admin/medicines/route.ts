@@ -17,7 +17,7 @@ export async function GET() {
       );
     }
 
-    const res = await fetch(`${BACKEND_URL}/api/products`, {
+    const res = await fetch(`${BACKEND_URL}/api/products?limit=100`, {
       cache: "no-store"
     });
     const data = await res.json();

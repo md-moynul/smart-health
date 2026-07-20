@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Link from 'next/link';
+import { toast } from 'react-toastify';
 
 type CartItemData = {
   productId: string;
@@ -71,9 +72,12 @@ function CartContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId }),
       });
+      const removed = cartItems.find((i) => i.productId === productId);
       setCartItems((prev) => prev.filter((i) => i.productId !== productId));
+      toast.success(`${removed?.product?.name || 'Item'} removed from cart`);
     } catch (err) {
       console.error('Failed to remove item:', err);
+      toast.error('Failed to remove item');
     } finally {
       setRemoving(null);
     }
@@ -90,8 +94,10 @@ function CartContent() {
       setCartItems((prev) =>
         prev.map((i) => (i.productId === productId ? { ...i, quantity: newQty } : i))
       );
+      toast.success('Quantity updated');
     } catch (err) {
       console.error('Failed to update quantity:', err);
+      toast.error('Failed to update quantity');
     }
   };
 

@@ -12,9 +12,11 @@ export default function FeaturedProducts() {
   useEffect(() => {
     async function getProducts() {
       try {
-        const res = await fetch('/api/products');
+        const res = await fetch('/api/products/featured');
         const data = await res.json();
-        if (Array.isArray(data)) {
+        if (data && Array.isArray(data.products)) {
+          setProducts(data.products);
+        } else if (Array.isArray(data)) {
           setProducts(data);
         }
       } catch (err) {
@@ -26,7 +28,7 @@ export default function FeaturedProducts() {
     getProducts();
   }, []);
 
-  const featured = products.slice(0, 8);
+  const featured = products;
 
   return (
     <section className="bg-white py-20 sm:py-24">

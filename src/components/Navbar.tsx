@@ -38,12 +38,12 @@ export default function Navbar() {
   };
 
   // Nav links shown only when authenticated 
-  const authLinks = [
-    { name: 'Dashboard', href: '/dashboard' },
+  const authLinks = [...[
     { name: 'Cart', href: '/cart' },
-    { name: 'Orders', href: '/orders' },
     { name: 'Profile', href: '/profile' },
-  ];
+  ],
+    ...(user?.role === 'admin' ? [{ name: 'Dashboard', href: '/dashboard' },] : [])
+];
 
   // Shared nav links (always visible)
   const publicLinks = [

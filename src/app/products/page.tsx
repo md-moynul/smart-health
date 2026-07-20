@@ -90,6 +90,7 @@ export default function ProductsPage() {
   // Debounced search input
   const [searchInput, setSearchInput] = useState(search);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchInput(search);
   }, [search]);
 
@@ -252,7 +253,7 @@ export default function ProductsPage() {
               id="pagination-prev"
               onClick={() => handlePage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 transition-colors hover:border-zinc-300 hover:text-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 transition-colors hover:border-zinc-300 hover:text-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
               aria-label="Previous page"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -272,7 +273,7 @@ export default function ProductsPage() {
                   key={page}
                   id={`pagination-page-${page}`}
                   onClick={() => handlePage(page)}
-                  className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-semibold transition-colors ${
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-semibold transition-colors cursor-pointer ${
                     page === currentPage
                       ? 'bg-zinc-950 text-white'
                       : 'border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-900'
@@ -287,7 +288,7 @@ export default function ProductsPage() {
               id="pagination-next"
               onClick={() => handlePage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 transition-colors hover:border-zinc-300 hover:text-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 transition-colors hover:border-zinc-300 hover:text-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
               aria-label="Next page"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

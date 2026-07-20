@@ -15,9 +15,9 @@ interface EditProfileDialogProps {
   user: UserProfile | null | undefined;
 }
 
-const fieldBg = "bg-[#FFF9F2] dark:bg-zinc-900";
-const fieldClass = `w-full px-3 py-2 rounded-xl border border-[#EAE0D3] dark:border-[#3A332A] ${fieldBg} text-[#2B2420] dark:text-[#F4EDE4] placeholder:text-[#9C9388] focus:outline-none focus:border-[#E85D3D] focus:ring-2 focus:ring-[#E85D3D]/20 transition-all text-sm`;
-const labelClass = "text-sm font-medium text-[#2B2420] dark:text-[#F4EDE4]";
+const fieldBg = "bg-zinc-50";
+const fieldClass = `w-full px-3 py-2 rounded-xl border border-zinc-200 ${fieldBg} text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-sm`;
+const labelClass = "text-sm font-medium text-zinc-700";
 
 export default function EditProfileDialog({ user }: EditProfileDialogProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -102,7 +102,7 @@ export default function EditProfileDialog({ user }: EditProfileDialogProps) {
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-1.5 rounded-xl border border-transparent bg-[#E85D3D] px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-[#D14E30] transition-colors"
+        className="flex items-center gap-1.5 rounded-full border border-transparent bg-zinc-950 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-zinc-800 transition-colors cursor-pointer"
       >
         <Pencil width={15} height={15} />
         Edit Profile
@@ -113,23 +113,33 @@ export default function EditProfileDialog({ user }: EditProfileDialogProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop Mask */}
           <div 
-            className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+            className="absolute inset-0 bg-zinc-950/40 backdrop-blur-xs transition-opacity"
             onClick={() => {
               if (!isSubmitting && !isUploading) setIsOpen(false);
             }}
           />
 
           {/* Dialog Box */}
-          <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-[#EAE0D3] bg-white p-6 shadow-xl transition-all dark:border-[#3A332A] dark:bg-[#252019]">
+          <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-zinc-150 bg-white p-6 shadow-2xl transition-all">
             
             {/* Header */}
-            <div className="flex items-center gap-3 pb-4 border-b border-[#EAE0D3]/30 dark:border-[#3A332A]/30">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E85D3D]/10 text-[#E85D3D]">
-                <Person width={20} height={20} />
+            <div className="flex items-center justify-between pb-4 border-b border-zinc-150">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <Person width={20} height={20} />
+                </div>
+                <h3 className="text-xl font-bold text-zinc-950">
+                  Edit Profile
+                </h3>
               </div>
-              <h3 className="text-xl font-semibold text-[#2B2420] dark:text-[#F4EDE4]">
-                Edit Profile
-              </h3>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
 
             {/* Form Body */}
@@ -139,7 +149,7 @@ export default function EditProfileDialog({ user }: EditProfileDialogProps) {
               <div className="flex flex-col items-center gap-3">
                 <label
                   htmlFor="dialog-avatar"
-                  className="relative flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-[#EAE0D3] bg-[#FFF9F2] transition-colors hover:border-[#E85D3D] dark:border-[#3A332A] dark:bg-zinc-900"
+                  className="relative flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-zinc-200 bg-zinc-50 transition-colors hover:border-emerald-500"
                 >
                   {avatarPreview ? (
                     <Image
@@ -149,9 +159,9 @@ export default function EditProfileDialog({ user }: EditProfileDialogProps) {
                       className="object-cover"
                     />
                   ) : (
-                    <Camera className="h-6 w-6 text-[#9C9388]" />
+                    <Camera className="h-6 w-6 text-zinc-400" />
                   )}
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity hover:opacity-100">
+                  <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/40 opacity-0 transition-opacity hover:opacity-100">
                     <Camera className="h-6 w-6 text-white" />
                   </div>
                 </label>
@@ -163,7 +173,7 @@ export default function EditProfileDialog({ user }: EditProfileDialogProps) {
                   onChange={handleAvatarChange}
                   disabled={isSubmitting || isUploading}
                 />
-                <p className="text-xs text-[#6B6155] dark:text-[#B8AFA2]">
+                <p className="text-xs text-zinc-500">
                   {isUploading ? "Uploading image..." : "Click circle to change photo"}
                 </p>
               </div>
@@ -197,22 +207,22 @@ export default function EditProfileDialog({ user }: EditProfileDialogProps) {
                 />
               </div>
 
-              {error && <p className="text-sm font-medium text-red-500 dark:text-red-400">{error}</p>}
+              {error && <p className="text-sm font-medium text-rose-500">{error}</p>}
 
               {/* Dialog Footer Actions */}
-              <div className="mt-4 flex justify-end gap-3 border-t border-[#EAE0D3]/30 dark:border-[#3A332A]/30 pt-4">
+              <div className="mt-4 flex justify-end gap-3 border-t border-zinc-150 pt-4">
                 <button
                   type="button"
                   disabled={isSubmitting || isUploading}
                   onClick={() => setIsOpen(false)}
-                  className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-50"
+                  className="px-4 py-2 rounded-full border border-zinc-200 text-zinc-650 hover:bg-zinc-50 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || isUploading}
-                  className="rounded-xl bg-[#E85D3D] px-5 py-2.5 text-sm font-medium text-white shadow-xs transition-colors hover:bg-[#D14E30] disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed"
+                  className="px-5 py-2 rounded-full bg-zinc-950 text-white hover:bg-zinc-800 transition-colors text-xs font-semibold disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {isSubmitting
                     ? "Saving…"

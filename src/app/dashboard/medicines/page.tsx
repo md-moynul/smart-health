@@ -39,7 +39,9 @@ export default function MedicinesManagement() {
     try {
       const res = await fetch('/api/admin/medicines');
       const data = await res.json();
-      if (Array.isArray(data)) {
+      if (data && Array.isArray(data.products)) {
+        setMedicines(data.products);
+      } else if (Array.isArray(data)) {
         setMedicines(data);
       } else {
         setError(data.error || 'Failed to load medicines');

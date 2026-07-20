@@ -10,11 +10,13 @@ export async function GET(req: NextRequest) {
     const sort = searchParams.get("sort") || "";
     const page = searchParams.get("page") || "1";
     const limit = searchParams.get("limit") || "8";
+    const featured = searchParams.get("featured") || "";
 
     const queryParams = new URLSearchParams();
     if (search) queryParams.set("search", search);
     if (category) queryParams.set("category", category);
     if (sort) queryParams.set("sort", sort);
+    if (featured) queryParams.set("featured", featured);
     queryParams.set("page", page);
     queryParams.set("limit", limit);
 

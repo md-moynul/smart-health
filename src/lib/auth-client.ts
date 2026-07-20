@@ -4,8 +4,8 @@ import { inferAdditionalFields } from "better-auth/client/plugins"
 import type { auth } from "./auth"
 
 export const authClient = createAuthClient({
-    /** The base URL of the server — must use NEXT_PUBLIC_ prefix to be available in the browser */
-    baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
+    /** The base URL of the server (optional if you're using the same domain) */
+    baseURL: process.env.BETTER_AUTH_URL,
     plugins: [
         jwtClient(),
         inferAdditionalFields<typeof auth>()
