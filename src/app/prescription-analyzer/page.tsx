@@ -50,7 +50,7 @@ export default function PrescriptionAnalyzerPage() {
         method: 'POST',
         body: formData,
       });
-
+      console.log(res)
       if (!res.ok) {
         throw new Error('Analysis failed. Please try again.');
       }
@@ -78,7 +78,7 @@ export default function PrescriptionAnalyzerPage() {
       {/* Upload Zone */}
       <div className="w-full max-w-2xl bg-white rounded-3xl shadow-sm border border-gray-200 p-8">
         {!previewUrl ? (
-          <div 
+          <div
             onClick={() => fileInputRef.current?.click()}
             className="flex flex-col items-center justify-center border-2 border-dashed border-teal-200 rounded-2xl p-12 bg-teal-50/50 hover:bg-teal-50 cursor-pointer transition-colors group"
           >
@@ -92,7 +92,7 @@ export default function PrescriptionAnalyzerPage() {
           <div className="flex flex-col items-center">
             <div className="relative w-full max-w-sm aspect-[3/4] mb-6 rounded-2xl overflow-hidden border border-gray-200 bg-gray-100">
               <img src={previewUrl} alt="Prescription preview" className="object-cover w-full h-full" />
-              <button 
+              <button
                 onClick={clearFile}
                 className="absolute top-3 right-3 bg-white/90 text-gray-700 p-1.5 rounded-full hover:bg-white hover:text-red-600 shadow-sm transition-colors"
                 title="Remove image"
@@ -100,7 +100,7 @@ export default function PrescriptionAnalyzerPage() {
                 <X size={20} />
               </button>
             </div>
-            
+
             <button
               onClick={handleAnalyze}
               disabled={isAnalyzing}
@@ -120,7 +120,7 @@ export default function PrescriptionAnalyzerPage() {
             </button>
           </div>
         )}
-        
+
         {/* Hidden File Input */}
         <input
           type="file"

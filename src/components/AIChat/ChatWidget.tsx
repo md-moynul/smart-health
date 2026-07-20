@@ -2,16 +2,21 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import { MessageCircle, X, Send, Loader2, Bot } from 'lucide-react';
 import { ChatMessage } from './ChatMessage';
 
 export const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [input, setInput] = useState('');
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
-    api: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api/chat`,
+  const { messages, sendMessage, status, error } = useChat({
+    transport: new DefaultChatTransport({
+      api: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api/chat`,
+    }),
   });
 
+  const isLoading = status === 'submitted' || status === 'streaming';
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -19,6 +24,14 @@ export const ChatWidget = () => {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isLoading]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = input.trim();
+    if (!trimmed || isLoading) return;
+    sendMessage({ text: trimmed });
+    setInput('');
+  };
 
   return (
     <>
@@ -55,7 +68,7 @@ export const ChatWidget = () => {
                 <p className="text-sm">Hi! I'm your SmartHealth assistant. How can I help you today?</p>
               </div>
             ) : (
-              messages.map((m: any) => <ChatMessage key={m.id} message={m} />)
+              messages.map((m) => <ChatMessage key={m.id} message={m} />)
             )}
 
             {isLoading && (
@@ -86,14 +99,14 @@ export const ChatWidget = () => {
             <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-2 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500">
               <input
                 value={input}
-                onChange={handleInputChange}
+                onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about our medicines..."
                 className="flex-1 bg-transparent text-sm outline-none"
                 disabled={isLoading}
               />
               <button
                 type="submit"
-                disabled={!input?.trim() || isLoading}
+                disabled={!input.trim() || isLoading}
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-600 text-white transition-colors disabled:bg-gray-300 disabled:text-gray-500"
               >
                 {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}

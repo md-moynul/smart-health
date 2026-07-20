@@ -1,8 +1,16 @@
 import React from 'react';
 import { Bot, User } from 'lucide-react';
+import type { UIMessage } from 'ai';
 
 interface ChatMessageProps {
-  message: any;
+  message: UIMessage;
+}
+
+function getMessageText(message: UIMessage): string {
+  return message.parts
+    .filter((part) => part.type === 'text')
+    .map((part) => part.text)
+    .join('');
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
@@ -24,9 +32,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
             : 'bg-gray-100 text-gray-800 rounded-tl-none'
         }`}
       >
-        {/* Render message content. For simplicity we just use white-space pre-wrap. A markdown parser could be added for richer text */}
         <div className="whitespace-pre-wrap leading-relaxed">
-          {message.content}
+          {getMessageText(message)}
         </div>
       </div>
     </div>
