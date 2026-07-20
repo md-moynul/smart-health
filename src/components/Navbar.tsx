@@ -49,6 +49,7 @@ export default function Navbar() {
   const publicLinks = [
     { name: 'Home', href: '/' },
     { name: 'Products', href: '/products' },
+    { name: 'Analyzer', href: '/prescription-analyzer' },
     { name: 'About', href: '/about' }
   ];
 
