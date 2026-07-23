@@ -87,9 +87,14 @@ export default function ProductDetailPage() {
 
         const listRes = await fetch('/api/products');
         const listData = await listRes.json();
-        if (Array.isArray(listData)) {
+        if (Array.isArray(listData.products)) {
+          const related = listData.products.filter(
+            (p: Product) => p.category === prodData.category && p.id !== prodData.id
+          ).slice(0, 4);
+          setRelatedProducts(related);
+        } else if (Array.isArray(listData)) {
           const related = listData.filter(
-            (p) => p.category === prodData.category && p.id !== prodData.id
+            (p: Product) => p.category === prodData.category && p.id !== prodData.id
           ).slice(0, 4);
           setRelatedProducts(related);
         }
@@ -104,33 +109,29 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     if (!product) return;
-    if (!session) {
+    
+    const userEmail = session?.user?.email;
+    if (!session || !userEmail) {
       router.push(`/login?callbackUrl=/products/${product.id}`);
       return;
     }
 
     try {
-      // Save to database
-      const res = await fetch('/api/cart', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/cart`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: product.id, quantity }),
+        body: JSON.stringify({ 
+          userEmail: userEmail, 
+          productId: product.id, 
+          quantity 
+        }),
       });
 
       if (!res.ok) {
-        toast.error('Failed to add to cart');
+        const errorData = await res.json();
+        toast.error(errorData.error || 'Failed to add to cart');
         return;
       }
-
-      // Also mirror in localStorage for quick access
-      const existing = JSON.parse(localStorage.getItem('cart') || '[]') as Array<{ id: string; quantity: number }>;
-      const idx = existing.findIndex((i) => i.id === product.id);
-      if (idx >= 0) {
-        existing[idx].quantity += quantity;
-      } else {
-        existing.push({ id: product.id, quantity });
-      }
-      localStorage.setItem('cart', JSON.stringify(existing));
 
       toast.success(`${product.name} added to cart!`);
       setAdded(true);
@@ -188,7 +189,7 @@ export default function ProductDetailPage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8">
         {/* Main Product Section */}
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-          {/* Product Image / Visual Showcase Container */}
+          {/* Product Image Container */}
           <div className="relative flex items-center justify-center rounded-3xl border border-zinc-150 bg-white p-8 lg:p-12 min-h-95 md:min-h-115 shadow-xs">
             {product.requiresPrescription && (
               <span className="absolute top-4 left-4 z-10 rounded-full bg-blue-600 px-3 py-1 text-[11px] font-bold tracking-wider text-white uppercase shadow-xs">Rx Only</span>
@@ -206,7 +207,6 @@ export default function ProductDetailPage() {
                   className="max-w-full max-h-85 w-auto h-auto object-contain transition-transform duration-300 hover:scale-102"
                   loading="eager"
                   onError={(e) => {
-                    // Safe injection fallback if runtime asset parsing errors out
                     (e.target as HTMLImageElement).style.display = 'none';
                     const parentEl = (e.target as HTMLImageElement).parentElement;
                     if (parentEl) {
@@ -216,7 +216,6 @@ export default function ProductDetailPage() {
                 />
               ) : null}
 
-              {/* Falling back cleanly to standard vector icons when link mapping returns null */}
               {(!product.image || product.image.trim() === '') && (
                 <div className="flex flex-col items-center gap-6">
                   <PharmacyIcon category={product.category} large />
@@ -281,7 +280,7 @@ export default function ProductDetailPage() {
             )}
 
             <div className="mt-5 space-y-2">
-              {product.details.map((detail, i) => (
+              {product.details?.map((detail, i) => (
                 <div key={i} className="flex items-start gap-2.5">
                   <svg className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -293,7 +292,6 @@ export default function ProductDetailPage() {
 
             {/* Add to Cart Section */}
             <div className="mt-8 space-y-4">
-              {/* Not logged in warning */}
               {!session && (
                 <div className="flex items-center gap-2.5 rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
                   <svg className="h-4 w-4 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

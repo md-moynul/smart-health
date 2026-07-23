@@ -1,40 +1,18 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { UploadCloud, X, Loader2, FileImage, CloudUpload, Clock, Pill, FileText } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { UploadCloud, X, Loader2, FileImage } from 'lucide-react';
 import { ResultsDisplay, AnalysisResult } from '@/components/Prescription/ResultsDisplay';
-import { authClient } from '@/lib/auth-client';
-
-interface PrescriptionRecord {
-  _id: string;
-  imageName?: string;
-  analysisResult: AnalysisResult;
-  createdAt: string;
-}
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000';
 
 export default function PrescriptionAnalyzerPage() {
-  const { data: session } = authClient.useSession();
-  const userId = session?.user?.id;
-
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [history, setHistory] = useState<PrescriptionRecord[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Fetch prescription history for current user
-  useEffect(() => {
-    if (!userId) return;
-    fetch(`${BASE_URL}/api/prescriptions/${userId}`)
-      .then((r) => r.json())
-      .then((data) => setHistory(data.prescriptions ?? []))
-      .catch(console.error);
-  }, [userId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -81,31 +59,6 @@ export default function PrescriptionAnalyzerPage() {
 
       const analysisResult: AnalysisResult = data.result;
       setResult(analysisResult);
-
-      // Persist result if the user is logged in
-      if (userId) {
-        setIsSaving(true);
-        try {
-          await fetch(`${BASE_URL}/api/save-prescription`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId,
-              imageName: file.name,
-              analysisResult,
-            }),
-          });
-
-          // Refresh history after save
-          const histRes = await fetch(`${BASE_URL}/api/prescriptions/${userId}`);
-          const histData = await histRes.json();
-          setHistory(histData.prescriptions ?? []);
-        } catch (saveErr) {
-          console.error('Failed to save prescription:', saveErr);
-        } finally {
-          setIsSaving(false);
-        }
-      }
     } catch (err: any) {
       console.error('Frontend Error Details:', err);
       setError(err.message || 'An error occurred during analysis.');
@@ -136,7 +89,7 @@ export default function PrescriptionAnalyzerPage() {
               <UploadCloud className="text-teal-600" size={32} />
             </div>
             <h3 className="text-lg font-semibold text-gray-700">Click to upload or drag and drop</h3>
-            <p className="text-sm text-gray-500 mt-2">SVG, PNG, JPG or GIF (max. 5MB)</p>
+            <p className="text-sm text-gray-500 mt-2">PNG, JPG or JPEG (max. 5MB)</p>
           </div>
         ) : (
           <div className="flex flex-col items-center">
@@ -153,18 +106,13 @@ export default function PrescriptionAnalyzerPage() {
 
             <button
               onClick={handleAnalyze}
-              disabled={isAnalyzing || isSaving}
+              disabled={isAnalyzing}
               className="flex items-center gap-2 bg-teal-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-teal-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isAnalyzing ? (
                 <>
                   <Loader2 size={20} className="animate-spin" />
                   Analyzing Image...
-                </>
-              ) : isSaving ? (
-                <>
-                  <CloudUpload size={20} className="animate-pulse" />
-                  Saving Result...
                 </>
               ) : (
                 <>
@@ -213,53 +161,6 @@ export default function PrescriptionAnalyzerPage() {
       )}
 
       {result && !isAnalyzing && <ResultsDisplay result={result} />}
-
-      {/* Prescription History */}
-      {history.length > 0 && (
-        <div className="w-full max-w-2xl mt-12">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock size={18} className="text-gray-400" />
-            <h2 className="text-lg font-semibold text-gray-800">Previous Analyses</h2>
-          </div>
-          <div className="space-y-4">
-            {history.map((record) => (
-              <details
-                key={record._id}
-                className="rounded-2xl border border-gray-200 bg-white shadow-sm group open:shadow-md transition-shadow"
-              >
-                <summary className="flex items-center justify-between p-5 cursor-pointer list-none">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-600">
-                      <FileText size={16} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800 text-sm">
-                        {record.imageName ?? 'Prescription'}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {new Date(record.createdAt).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700">
-                    <Pill size={12} />
-                    {record.analysisResult.medicines.length} medicine{record.analysisResult.medicines.length !== 1 ? 's' : ''}
-                  </span>
-                </summary>
-                <div className="px-5 pb-5">
-                  <ResultsDisplay result={record.analysisResult} />
-                </div>
-              </details>
-            ))}
-          </div>
-        </div>
-      )}
     </main>
   );
 }

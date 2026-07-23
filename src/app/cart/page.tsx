@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
+import { authClient } from '@/lib/auth-client';
 
 type CartItemData = {
   productId: string;
@@ -20,16 +21,31 @@ type ProductInfo = {
 
 type CartItemWithProduct = CartItemData & { product: ProductInfo | null };
 
+// Backend Base URL resolution
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || '';
+
 function CartContent() {
   const [cartItems, setCartItems] = useState<CartItemWithProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState<string | null>(null);
 
+  // Session hook strictly at top-level
+  const { data: session } = authClient.useSession();
+  const userEmail = session?.user?.email;
+
   const loadCart = useCallback(async () => {
+    if (!userEmail) return;
+
     try {
       setLoading(true);
-      // 1. Fetch cart items from DB via Next.js proxy
-      const cartRes = await fetch('/api/cart');
+      // Fetching from Backend directly using NEXT_PUBLIC_BASE_URL
+      const cartRes = await fetch(`${BASE_URL}/api/cart?email=${encodeURIComponent(userEmail)}`);
+      
+      if (!cartRes.ok) {
+        setCartItems([]);
+        return;
+      }
+
       const cartData = await cartRes.json();
       const items: CartItemData[] = cartData.items || [];
 
@@ -38,16 +54,18 @@ function CartContent() {
         return;
       }
 
-      // 2. Fetch product details for each item
+      // Fetch product details for each item
       const enriched: CartItemWithProduct[] = await Promise.all(
         items.map(async (item) => {
           try {
-            const prodRes = await fetch(`/api/products/${item.productId}`);
+            const prodRes = await fetch(`${BASE_URL}/api/products/${item.productId}`);
             if (prodRes.ok) {
               const product = await prodRes.json();
               return { ...item, product };
             }
-          } catch {}
+          } catch {
+            // silent catch on error
+          }
           return { ...item, product: null };
         })
       );
@@ -58,21 +76,26 @@ function CartContent() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [userEmail]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadCart();
   }, [loadCart]);
 
   const handleRemove = async (productId: string) => {
     setRemoving(productId);
     try {
-      await fetch('/api/cart', {
+      const res = await fetch(`${BASE_URL}/api/cart`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId }),
+        body: JSON.stringify({ productId, userEmail }),
       });
+
+      if (!res.ok) {
+        toast.error('Failed to remove item');
+        return;
+      }
+
       const removed = cartItems.find((i) => i.productId === productId);
       setCartItems((prev) => prev.filter((i) => i.productId !== productId));
       toast.success(`${removed?.product?.name || 'Item'} removed from cart`);
@@ -87,11 +110,17 @@ function CartContent() {
   const handleUpdateQty = async (productId: string, newQty: number) => {
     if (newQty < 1) return;
     try {
-      await fetch('/api/cart', {
+      const res = await fetch(`${BASE_URL}/api/cart`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quantity: newQty }),
+        body: JSON.stringify({ productId, quantity: newQty, userEmail }),
       });
+
+      if (!res.ok) {
+        toast.error('Failed to update quantity');
+        return;
+      }
+
       setCartItems((prev) =>
         prev.map((i) => (i.productId === productId ? { ...i, quantity: newQty } : i))
       );
@@ -126,7 +155,7 @@ function CartContent() {
       <header className="bg-white border-b border-zinc-150 py-6">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <Link href="/" className="inline-flex items-center space-x-2">
-            <span className="bg-linear-to-r from-emerald-500 to-teal-600 bg-clip-text text-xl font-bold tracking-tight text-transparent">
+            <span className="bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-xl font-bold tracking-tight text-transparent">
               SmartHealth
             </span>
           </Link>
@@ -197,7 +226,7 @@ function CartContent() {
                         <button
                           onClick={() => handleUpdateQty(item.productId, item.quantity - 1)}
                           disabled={item.quantity <= 1}
-                          className="px-3 py-1.5 text-zinc-500 hover:text-zinc-900 disabled:opacity-30 transition-colors text-sm font-bold"
+                          className="px-3 py-1.5 text-zinc-500 hover:text-zinc-900 disabled:opacity-30 transition-colors text-sm font-bold cursor-pointer"
                         >
                           −
                         </button>
@@ -206,7 +235,7 @@ function CartContent() {
                         </span>
                         <button
                           onClick={() => handleUpdateQty(item.productId, item.quantity + 1)}
-                          className="px-3 py-1.5 text-zinc-500 hover:text-zinc-900 transition-colors text-sm font-bold"
+                          className="px-3 py-1.5 text-zinc-500 hover:text-zinc-900 transition-colors text-sm font-bold cursor-pointer"
                         >
                           +
                         </button>
@@ -221,7 +250,7 @@ function CartContent() {
                       <button
                         onClick={() => handleRemove(item.productId)}
                         disabled={removing === item.productId}
-                        className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
                         title="Remove"
                       >
                         {removing === item.productId ? (
@@ -244,15 +273,15 @@ function CartContent() {
                 <h2 className="text-lg font-bold">Order Summary</h2>
 
                 <div className="space-y-3.5 text-sm">
-                  <div className="flex justify-between text-zinc-555">
+                  <div className="flex justify-between text-zinc-500">
                     <span>Subtotal ({cartItems.reduce((a, i) => a + i.quantity, 0)} items)</span>
                     <span className="font-semibold text-zinc-800">৳{subtotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-zinc-555">
+                  <div className="flex justify-between text-zinc-500">
                     <span>Estimated Tax</span>
                     <span className="font-semibold text-zinc-800">৳{tax.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-zinc-555">
+                  <div className="flex justify-between text-zinc-500">
                     <span>Shipping</span>
                     <span className="font-semibold text-emerald-600">Free</span>
                   </div>
@@ -264,7 +293,7 @@ function CartContent() {
 
                 <button
                   type="button"
-                  className="w-full rounded-full bg-zinc-950 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 transition-colors"
+                  className="w-full rounded-full bg-zinc-950 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   Proceed to Checkout
                 </button>

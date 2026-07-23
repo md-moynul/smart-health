@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
@@ -46,7 +47,7 @@ export const ChatWidget = () => {
       new DefaultChatTransport({
         api: `${BASE_URL}/api/chat`,
         prepareSendMessagesRequest: ({ id, messages, body }) => ({
-          body: { ...(body ?? {}), userId },
+          body: { ...(body ?? {}), userId,messages ,id},
         }),
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
