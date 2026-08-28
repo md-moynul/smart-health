@@ -13,7 +13,7 @@ export default function Hero() {
             {/* Tag/Badge */}
             <div className="inline-flex items-center justify-center sm:justify-start">
               <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/10">
-                Your Trusted Online Pharmacy
+                Your Trusted Online Pharmacy Solution
               </span>
             </div>
 
